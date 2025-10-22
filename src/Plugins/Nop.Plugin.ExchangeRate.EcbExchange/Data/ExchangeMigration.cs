@@ -1,7 +1,7 @@
 ﻿using FluentMigrator;
 using Nop.Data;
 using Nop.Data.Migrations;
-using Nop.Services.Configuration;
+using Nop.Services.Helpers;
 
 namespace Nop.Plugin.ExchangeRate.EcbExchange.Data;
 
@@ -11,17 +11,17 @@ public class ExchangeEcbMigration : MigrationBase
     #region Fields
 
     protected readonly EcbExchangeRateSettings _ecbExchangeRateSettings;
-    protected readonly ISettingService _settingService;
+    protected readonly ISynchronousCodeHelper _synchronousCodeHelper;
 
     #endregion
 
     #region Ctor
 
     public ExchangeEcbMigration(EcbExchangeRateSettings ecbExchangeRateSettings,
-        ISettingService settingService)
+        ISynchronousCodeHelper synchronousCodeHelper)
     {
         _ecbExchangeRateSettings = ecbExchangeRateSettings;
-        _settingService = settingService;
+        _synchronousCodeHelper = synchronousCodeHelper;
     }
 
     #endregion
@@ -37,10 +37,10 @@ public class ExchangeEcbMigration : MigrationBase
             return;
 
         //settings
-        if (!_settingService.SettingExists(_ecbExchangeRateSettings, settings => settings.EcbLink))
+        if (!_synchronousCodeHelper.SettingExists(_ecbExchangeRateSettings, settings => settings.EcbLink))
             _ecbExchangeRateSettings.EcbLink = "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml";
 
-        _settingService.SaveSetting(_ecbExchangeRateSettings);
+        _synchronousCodeHelper.SaveSetting(_ecbExchangeRateSettings);
     }
 
     /// <summary>

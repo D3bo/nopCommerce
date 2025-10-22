@@ -10,7 +10,7 @@ using Nop.Core.Infrastructure;
 using Nop.Data;
 using Nop.Data.Migrations;
 using Nop.Services.Catalog;
-using Nop.Services.Configuration;
+using Nop.Services.Helpers;
 using Nop.Services.Seo;
 
 namespace Nop.Web.Framework.Migrations.UpgradeTo440;
@@ -25,162 +25,160 @@ public class SettingMigration : MigrationBase
             return;
 
         //do not use DI, because it produces exception on the installation process
-        var settingRepository = EngineContext.Current.Resolve<IRepository<Setting>>();
-        var settingService = EngineContext.Current.Resolve<ISettingService>();
+        var dataProvider = EngineContext.Current.Resolve<INopDataProvider>();
+        var synchronousCodeHelper = EngineContext.Current.Resolve<ISynchronousCodeHelper>();
 
         //#4904 External authentication errors logging
-        var externalAuthenticationSettings = settingService.LoadSetting<ExternalAuthenticationSettings>();
-        if (!settingService.SettingExists(externalAuthenticationSettings, settings => settings.LogErrors))
+        var externalAuthenticationSettings = synchronousCodeHelper.LoadSetting<ExternalAuthenticationSettings>();
+        if (!synchronousCodeHelper.SettingExists(externalAuthenticationSettings, settings => settings.LogErrors))
         {
             externalAuthenticationSettings.LogErrors = false;
-            settingService.SaveSetting(externalAuthenticationSettings, settings => settings.LogErrors);
+            synchronousCodeHelper.SaveSetting(externalAuthenticationSettings, settings => settings.LogErrors);
         }
 
-        var multiFactorAuthenticationSettings = settingService.LoadSetting<MultiFactorAuthenticationSettings>();
-        if (!settingService.SettingExists(multiFactorAuthenticationSettings, settings => settings.ForceMultifactorAuthentication))
+        var multiFactorAuthenticationSettings = synchronousCodeHelper.LoadSetting<MultiFactorAuthenticationSettings>();
+        if (!synchronousCodeHelper.SettingExists(multiFactorAuthenticationSettings, settings => settings.ForceMultifactorAuthentication))
         {
             multiFactorAuthenticationSettings.ForceMultifactorAuthentication = false;
 
-            settingService.SaveSetting(multiFactorAuthenticationSettings, settings => settings.ForceMultifactorAuthentication);
+            synchronousCodeHelper.SaveSetting(multiFactorAuthenticationSettings, settings => settings.ForceMultifactorAuthentication);
         }
 
         //#5102 Delete Full-text settings
-        settingRepository
-            .Delete(setting => setting.Name == "commonsettings.usefulltextsearch" || setting.Name == "commonsettings.fulltextmode");
+        dataProvider.BulkDeleteEntities<Setting>(setting => setting.Name == "commonsettings.usefulltextsearch" || setting.Name == "commonsettings.fulltextmode");
 
         //#4196
-        settingRepository
-            .Delete(setting => setting.Name == "commonsettings.scheduletaskruntimeout" ||
-                               setting.Name == "commonsettings.staticfilescachecontrol" ||
-                               setting.Name == "commonsettings.supportpreviousnopcommerceversions" ||
-                               setting.Name == "securitysettings.pluginstaticfileextensionsBlacklist");
+        dataProvider.BulkDeleteEntities<Setting>(setting => setting.Name == "commonsettings.scheduletaskruntimeout" ||
+            setting.Name == "commonsettings.staticfilescachecontrol" ||
+            setting.Name == "commonsettings.supportpreviousnopcommerceversions" ||
+            setting.Name == "securitysettings.pluginstaticfileextensionsBlacklist");
 
         //#5384
-        var seoSettings = settingService.LoadSetting<SeoSettings>();
+        var seoSettings = synchronousCodeHelper.LoadSetting<SeoSettings>();
         foreach (var slug in NopSeoDefaults.ReservedUrlRecordSlugs)
         {
             if (!seoSettings.ReservedUrlRecordSlugs.Contains(slug))
                 seoSettings.ReservedUrlRecordSlugs.Add(slug);
         }
-        settingService.SaveSetting(seoSettings, settings => seoSettings.ReservedUrlRecordSlugs);
+        synchronousCodeHelper.SaveSetting(seoSettings, settings => seoSettings.ReservedUrlRecordSlugs);
 
         //#3015
         var homepageTitleKey = $"{nameof(SeoSettings)}.HomepageTitle".ToLower();
-        if (settingService.GetSettingByKey<string>(homepageTitleKey) == null)
-            settingService.SetSetting(homepageTitleKey, settingService.GetSettingByKey<string>($"{nameof(SeoSettings)}.DefaultTitle"));
+        if (synchronousCodeHelper.GetSettingByKey<string>(homepageTitleKey) == null)
+            synchronousCodeHelper.SetSetting(homepageTitleKey, synchronousCodeHelper.GetSettingByKey<string>($"{nameof(SeoSettings)}.DefaultTitle"));
 
         var homepageDescriptionKey = $"{nameof(SeoSettings)}.HomepageDescription".ToLower();
-        if (settingService.GetSettingByKey<string>(homepageDescriptionKey) == null)
-            settingService.SetSetting(homepageDescriptionKey, "Your home page description");
+        if (synchronousCodeHelper.GetSettingByKey<string>(homepageDescriptionKey) == null)
+            synchronousCodeHelper.SetSetting(homepageDescriptionKey, "Your home page description");
 
         //#5210
-        var adminAreaSettings = settingService.LoadSetting<AdminAreaSettings>();
-        if (!settingService.SettingExists(adminAreaSettings, settings => settings.ShowDocumentationReferenceLinks))
+        var adminAreaSettings = synchronousCodeHelper.LoadSetting<AdminAreaSettings>();
+        if (!synchronousCodeHelper.SettingExists(adminAreaSettings, settings => settings.ShowDocumentationReferenceLinks))
         {
             adminAreaSettings.ShowDocumentationReferenceLinks = true;
-            settingService.SaveSetting(adminAreaSettings, settings => settings.ShowDocumentationReferenceLinks);
+            synchronousCodeHelper.SaveSetting(adminAreaSettings, settings => settings.ShowDocumentationReferenceLinks);
         }
 
         //#4944
-        var shippingSettings = settingService.LoadSetting<ShippingSettings>();
-        if (!settingService.SettingExists(shippingSettings, settings => settings.RequestDelay))
+        var shippingSettings = synchronousCodeHelper.LoadSetting<ShippingSettings>();
+        if (!synchronousCodeHelper.SettingExists(shippingSettings, settings => settings.RequestDelay))
         {
             shippingSettings.RequestDelay = 300;
-            settingService.SaveSetting(shippingSettings, settings => settings.RequestDelay);
+            synchronousCodeHelper.SaveSetting(shippingSettings, settings => settings.RequestDelay);
         }
 
         //#276 AJAX filters
-        var catalogSettings = settingService.LoadSetting<CatalogSettings>();
-        if (!settingService.SettingExists(catalogSettings, settings => settings.UseAjaxCatalogProductsLoading))
+        var catalogSettings = synchronousCodeHelper.LoadSetting<CatalogSettings>();
+        if (!synchronousCodeHelper.SettingExists(catalogSettings, settings => settings.UseAjaxCatalogProductsLoading))
         {
             catalogSettings.UseAjaxCatalogProductsLoading = true;
-            settingService.SaveSetting(catalogSettings, settings => settings.UseAjaxCatalogProductsLoading);
+            synchronousCodeHelper.SaveSetting(catalogSettings, settings => settings.UseAjaxCatalogProductsLoading);
         }
 
-        if (!settingService.SettingExists(catalogSettings, settings => settings.EnableManufacturerFiltering))
+        if (!synchronousCodeHelper.SettingExists(catalogSettings, settings => settings.EnableManufacturerFiltering))
         {
             catalogSettings.EnableManufacturerFiltering = true;
-            settingService.SaveSetting(catalogSettings, settings => settings.EnableManufacturerFiltering);
+            synchronousCodeHelper.SaveSetting(catalogSettings, settings => settings.EnableManufacturerFiltering);
         }
 
-        if (!settingService.SettingExists(catalogSettings, settings => settings.EnablePriceRangeFiltering))
+        if (!synchronousCodeHelper.SettingExists(catalogSettings, settings => settings.EnablePriceRangeFiltering))
         {
             catalogSettings.EnablePriceRangeFiltering = true;
-            settingService.SaveSetting(catalogSettings, settings => settings.EnablePriceRangeFiltering);
+            synchronousCodeHelper.SaveSetting(catalogSettings, settings => settings.EnablePriceRangeFiltering);
         }
 
-        if (!settingService.SettingExists(catalogSettings, settings => settings.SearchPagePriceRangeFiltering))
+        if (!synchronousCodeHelper.SettingExists(catalogSettings, settings => settings.SearchPagePriceRangeFiltering))
         {
             catalogSettings.SearchPagePriceRangeFiltering = true;
-            settingService.SaveSetting(catalogSettings, settings => settings.SearchPagePriceRangeFiltering);
+            synchronousCodeHelper.SaveSetting(catalogSettings, settings => settings.SearchPagePriceRangeFiltering);
         }
 
-        if (!settingService.SettingExists(catalogSettings, settings => settings.SearchPagePriceFrom))
+        if (!synchronousCodeHelper.SettingExists(catalogSettings, settings => settings.SearchPagePriceFrom))
         {
             catalogSettings.SearchPagePriceFrom = NopCatalogDefaults.DefaultPriceRangeFrom;
-            settingService.SaveSetting(catalogSettings, settings => settings.SearchPagePriceFrom);
+            synchronousCodeHelper.SaveSetting(catalogSettings, settings => settings.SearchPagePriceFrom);
         }
 
-        if (!settingService.SettingExists(catalogSettings, settings => settings.SearchPagePriceTo))
+        if (!synchronousCodeHelper.SettingExists(catalogSettings, settings => settings.SearchPagePriceTo))
         {
             catalogSettings.SearchPagePriceTo = NopCatalogDefaults.DefaultPriceRangeTo;
-            settingService.SaveSetting(catalogSettings, settings => settings.SearchPagePriceTo);
+            synchronousCodeHelper.SaveSetting(catalogSettings, settings => settings.SearchPagePriceTo);
         }
 
-        if (!settingService.SettingExists(catalogSettings, settings => settings.SearchPageManuallyPriceRange))
+        if (!synchronousCodeHelper.SettingExists(catalogSettings, settings => settings.SearchPageManuallyPriceRange))
         {
             catalogSettings.SearchPageManuallyPriceRange = false;
-            settingService.SaveSetting(catalogSettings, settings => settings.SearchPageManuallyPriceRange);
+            synchronousCodeHelper.SaveSetting(catalogSettings, settings => settings.SearchPageManuallyPriceRange);
         }
 
-        if (!settingService.SettingExists(catalogSettings, settings => settings.ProductsByTagPriceRangeFiltering))
+        if (!synchronousCodeHelper.SettingExists(catalogSettings, settings => settings.ProductsByTagPriceRangeFiltering))
         {
             catalogSettings.ProductsByTagPriceRangeFiltering = true;
-            settingService.SaveSetting(catalogSettings, settings => settings.ProductsByTagPriceRangeFiltering);
+            synchronousCodeHelper.SaveSetting(catalogSettings, settings => settings.ProductsByTagPriceRangeFiltering);
         }
 
-        if (!settingService.SettingExists(catalogSettings, settings => settings.ProductsByTagPriceFrom))
+        if (!synchronousCodeHelper.SettingExists(catalogSettings, settings => settings.ProductsByTagPriceFrom))
         {
             catalogSettings.ProductsByTagPriceFrom = NopCatalogDefaults.DefaultPriceRangeFrom;
-            settingService.SaveSetting(catalogSettings, settings => settings.ProductsByTagPriceFrom);
+            synchronousCodeHelper.SaveSetting(catalogSettings, settings => settings.ProductsByTagPriceFrom);
         }
 
-        if (!settingService.SettingExists(catalogSettings, settings => settings.ProductsByTagPriceTo))
+        if (!synchronousCodeHelper.SettingExists(catalogSettings, settings => settings.ProductsByTagPriceTo))
         {
             catalogSettings.ProductsByTagPriceTo = NopCatalogDefaults.DefaultPriceRangeTo;
-            settingService.SaveSetting(catalogSettings, settings => settings.ProductsByTagPriceTo);
+            synchronousCodeHelper.SaveSetting(catalogSettings, settings => settings.ProductsByTagPriceTo);
         }
 
-        if (!settingService.SettingExists(catalogSettings, settings => settings.ProductsByTagManuallyPriceRange))
+        if (!synchronousCodeHelper.SettingExists(catalogSettings, settings => settings.ProductsByTagManuallyPriceRange))
         {
             catalogSettings.ProductsByTagManuallyPriceRange = false;
-            settingService.SaveSetting(catalogSettings, settings => settings.ProductsByTagManuallyPriceRange);
+            synchronousCodeHelper.SaveSetting(catalogSettings, settings => settings.ProductsByTagManuallyPriceRange);
         }
 
         //#4303
-        var orderSettings = settingService.LoadSetting<OrderSettings>();
-        if (!settingService.SettingExists(orderSettings, settings => settings.DisplayCustomerCurrencyOnOrders))
+        var orderSettings = synchronousCodeHelper.LoadSetting<OrderSettings>();
+        if (!synchronousCodeHelper.SettingExists(orderSettings, settings => settings.DisplayCustomerCurrencyOnOrders))
         {
             orderSettings.DisplayCustomerCurrencyOnOrders = false;
-            settingService.SaveSetting(orderSettings, settings => settings.DisplayCustomerCurrencyOnOrders);
+            synchronousCodeHelper.SaveSetting(orderSettings, settings => settings.DisplayCustomerCurrencyOnOrders);
         }
 
         //#16 #2909
-        if (!settingService.SettingExists(catalogSettings, settings => settings.AttributeValueOutOfStockDisplayType))
+        if (!synchronousCodeHelper.SettingExists(catalogSettings, settings => settings.AttributeValueOutOfStockDisplayType))
         {
             catalogSettings.AttributeValueOutOfStockDisplayType = AttributeValueOutOfStockDisplayType.AlwaysDisplay;
-            settingService.SaveSetting(catalogSettings, settings => settings.AttributeValueOutOfStockDisplayType);
+            synchronousCodeHelper.SaveSetting(catalogSettings, settings => settings.AttributeValueOutOfStockDisplayType);
         }
 
         //#5482
-        settingService.SetSetting("avalarataxsettings.gettaxratebyaddressonly", true);
-        settingService.SetSetting("avalarataxsettings.taxratebyaddresscachetime", 480);
+        synchronousCodeHelper.SetSetting("avalarataxsettings.gettaxratebyaddressonly", true);
+        synchronousCodeHelper.SetSetting("avalarataxsettings.taxratebyaddresscachetime", 480);
 
         //#5349
-        if (!settingService.SettingExists(shippingSettings, settings => settings.EstimateShippingCityNameEnabled))
+        if (!synchronousCodeHelper.SettingExists(shippingSettings, settings => settings.EstimateShippingCityNameEnabled))
         {
             shippingSettings.EstimateShippingCityNameEnabled = false;
-            settingService.SaveSetting(shippingSettings, settings => settings.EstimateShippingCityNameEnabled);
+            synchronousCodeHelper.SaveSetting(shippingSettings, settings => settings.EstimateShippingCityNameEnabled);
         }
     }
 

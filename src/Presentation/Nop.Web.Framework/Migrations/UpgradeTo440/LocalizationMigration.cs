@@ -2,7 +2,7 @@
 using Nop.Core.Infrastructure;
 using Nop.Data;
 using Nop.Data.Migrations;
-using Nop.Services.Localization;
+using Nop.Services.Helpers;
 using Nop.Web.Framework.Extensions;
 
 namespace Nop.Web.Framework.Migrations.UpgradeTo440;
@@ -17,10 +17,10 @@ public class LocalizationMigration : MigrationBase
             return;
 
         //do not use DI, because it produces exception on the installation process
-        var localizationService = EngineContext.Current.Resolve<ILocalizationService>();
+        var synchronousCodeHelper = EngineContext.Current.Resolve<ISynchronousCodeHelper>();
 
         //use localizationService to add, update and delete localization resources
-        localizationService.DeleteLocaleResources(new List<string>
+        synchronousCodeHelper.DeleteLocaleResources(new List<string>
         {
             "Account.Fields.VatNumber.Status",
             "Account.Fields.VatNumberStatus",
@@ -160,7 +160,7 @@ public class LocalizationMigration : MigrationBase
 
         var (languageId, languages) = this.GetLanguageData();
 
-        localizationService.AddOrUpdateLocaleResource(new Dictionary<string, string>
+        synchronousCodeHelper.AddOrUpdateLocaleResource(new Dictionary<string, string>
         {
             ["Admin.System.Warnings.PluginNotEnabled.AutoFixAndRestart"] = "Uninstall and delete all not used plugins automatically (site will be restarted)",
             ["Admin.Configuration.AppSettings"] = "App settings",
@@ -761,7 +761,7 @@ public class LocalizationMigration : MigrationBase
 
             //#5429
             ["Search.NoResultsText"] = "Catalog.Products.NoResult"
-        }, languages, localizationService);
+        }, languages, synchronousCodeHelper);
     }
 
     /// <summary>Collects the DOWN migration expressions</summary>

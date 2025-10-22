@@ -3,7 +3,7 @@ using Nop.Data;
 using Nop.Data.Mapping;
 using Nop.Data.Migrations;
 using Nop.Plugin.Widgets.FacebookPixel.Domain;
-using Nop.Services.Localization;
+using Nop.Services.Helpers;
 using Nop.Web.Framework.Extensions;
 
 namespace Nop.Plugin.Widgets.FacebookPixel.Data;
@@ -13,18 +13,15 @@ public class ConversionsApiMigration : MigrationBase
 {
     #region Fields
 
-    protected readonly ILanguageService _languageService;
-    protected readonly ILocalizationService _localizationService;
+    protected readonly ISynchronousCodeHelper _synchronousCodeHelper;
 
     #endregion
 
     #region Ctor
 
-    public ConversionsApiMigration(ILanguageService languageService,
-        ILocalizationService localizationService)
+    public ConversionsApiMigration(ISynchronousCodeHelper synchronousCodeHelper)
     {
-        _languageService = languageService;
-        _localizationService = localizationService;
+        _synchronousCodeHelper = synchronousCodeHelper;
     }
 
     #endregion
@@ -67,7 +64,7 @@ public class ConversionsApiMigration : MigrationBase
         //locales
         var (languageId, _) = this.GetLanguageData();
 
-        _localizationService.AddOrUpdateLocaleResource(new Dictionary<string, string>
+        _synchronousCodeHelper.AddOrUpdateLocaleResource(new Dictionary<string, string>
         {
             ["Plugins.Widgets.FacebookPixel.Configuration.Fields.AccessToken"] = "Access token",
             ["Plugins.Widgets.FacebookPixel.Configuration.Fields.AccessToken.Hint"] = "Enter the Facebook Conversions API access token.",
@@ -78,7 +75,7 @@ public class ConversionsApiMigration : MigrationBase
             ["Plugins.Widgets.FacebookPixel.Configuration.Fields.ConversionsApiEnabled.Hint"] = "Toggle to enable/disable Facebook Conversions API for this configuration."
         }, languageId);
 
-        _localizationService.DeleteLocaleResources(new List<string>
+        _synchronousCodeHelper.DeleteLocaleResources(new List<string>
         {
             "Plugins.Widgets.FacebookPixel.Configuration.Fields.Enabled",
             "Plugins.Widgets.FacebookPixel.Configuration.Fields.Enabled.Hint"

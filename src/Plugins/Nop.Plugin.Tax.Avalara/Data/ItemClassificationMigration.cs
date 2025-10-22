@@ -4,8 +4,7 @@ using Nop.Data.Extensions;
 using Nop.Data.Mapping;
 using Nop.Data.Migrations;
 using Nop.Plugin.Tax.Avalara.Domain;
-using Nop.Services.Configuration;
-using Nop.Services.Localization;
+using Nop.Services.Helpers;
 using Nop.Web.Framework.Extensions;
 
 namespace Nop.Plugin.Tax.Avalara.Data;
@@ -16,23 +15,17 @@ public class ItemClassificationMigration : MigrationBase
     #region Fields
 
     protected readonly AvalaraTaxSettings _avalaraTaxSettings;
-    protected readonly ILanguageService _languageService;
-    protected readonly ILocalizationService _localizationService;
-    protected readonly ISettingService _settingService;
+    protected readonly ISynchronousCodeHelper _synchronousCodeHelper;
 
     #endregion
 
     #region Ctor
 
     public ItemClassificationMigration(AvalaraTaxSettings avalaraTaxSettings,
-        ILanguageService languageService,
-        ILocalizationService localizationService,
-        ISettingService settingService)
+        ISynchronousCodeHelper synchronousCodeHelper)
     {
         _avalaraTaxSettings = avalaraTaxSettings;
-        _languageService = languageService;
-        _localizationService = localizationService;
-        _settingService = settingService;
+        _synchronousCodeHelper = synchronousCodeHelper;
     }
 
     #endregion
@@ -53,7 +46,7 @@ public class ItemClassificationMigration : MigrationBase
         //locales
         var (languageId, languages) = this.GetLanguageData();
 
-        _localizationService.AddOrUpdateLocaleResource(new Dictionary<string, string>
+        _synchronousCodeHelper.AddOrUpdateLocaleResource(new Dictionary<string, string>
         {
             ["Plugins.Tax.Avalara.ItemClassification"] = "Item Classification",
             ["Plugins.Tax.Avalara.Fields.UseItemClassification"] = "Use item classification",
@@ -83,13 +76,13 @@ public class ItemClassificationMigration : MigrationBase
         }, languageId);
 
         //settings
-        if (!_settingService.SettingExists(_avalaraTaxSettings, settings => settings.UseItemClassification))
+        if (!_synchronousCodeHelper.SettingExists(_avalaraTaxSettings, settings => settings.UseItemClassification))
             _avalaraTaxSettings.UseItemClassification = false;
 
-        if (!_settingService.SettingExists(_avalaraTaxSettings, settings => settings.SelectedCountryIds))
+        if (!_synchronousCodeHelper.SettingExists(_avalaraTaxSettings, settings => settings.SelectedCountryIds))
             _avalaraTaxSettings.SelectedCountryIds = null;
 
-        _settingService.SaveSetting(_avalaraTaxSettings);
+        _synchronousCodeHelper.SaveSetting(_avalaraTaxSettings);
     }
 
     /// <summary>

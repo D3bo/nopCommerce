@@ -2,7 +2,7 @@
 using Nop.Core.Infrastructure;
 using Nop.Data;
 using Nop.Data.Migrations;
-using Nop.Services.Localization;
+using Nop.Services.Helpers;
 using Nop.Web.Framework.Extensions;
 
 namespace Nop.Web.Framework.Migrations.UpgradeTo450;
@@ -17,10 +17,10 @@ public class LocalizationMigration : MigrationBase
             return;
 
         //do not use DI, because it produces exception on the installation process
-        var localizationService = EngineContext.Current.Resolve<ILocalizationService>();
+        var synchronousCodeHelper = EngineContext.Current.Resolve<ISynchronousCodeHelper>();
 
         //use localizationService to add, update and delete localization resources
-        localizationService.DeleteLocaleResources(new List<string>
+        synchronousCodeHelper.DeleteLocaleResources(new List<string>
         {
             "Admin.Configuration.AppSettings.Hosting.UseHttpClusterHttps",
             "Admin.Configuration.AppSettings.Hosting.UseHttpClusterHttps.Hint",
@@ -34,7 +34,7 @@ public class LocalizationMigration : MigrationBase
 
         var (languageId, languages) = this.GetLanguageData();
 
-        localizationService.AddOrUpdateLocaleResource(new Dictionary<string, string>
+        synchronousCodeHelper.AddOrUpdateLocaleResource(new Dictionary<string, string>
         {
             //#5696
             ["Admin.ContentManagement.MessageTemplates.List.SearchKeywords"] = "Search keywords",
@@ -183,7 +183,7 @@ public class LocalizationMigration : MigrationBase
             ["Admin.Configuration.Settings.GeneralCommon.EnableJsBundling.Hint"] = "Admin.Configuration.AppSettings.WebOptimizer.EnableJavaScriptBundling.Hint",
             ["Admin.Configuration.Settings.GeneralCommon.EnableCssBundling"] = "Admin.Configuration.AppSettings.WebOptimizer.EnableCssBundling",
             ["Admin.Configuration.Settings.GeneralCommon.EnableCssBundling.Hint"] = "Admin.Configuration.AppSettings.WebOptimizer.EnableCssBundling.Hint"
-        }, languages, localizationService);
+        }, languages, synchronousCodeHelper);
     }
 
     /// <summary>Collects the DOWN migration expressions</summary>

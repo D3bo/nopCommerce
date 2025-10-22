@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Routing;
 using Nop.Core;
 using Nop.Core.Infrastructure;
+using Nop.Services.Helpers;
 using Nop.Services.Localization;
 
 namespace Nop.Web.Framework.Mvc.Routing;
@@ -44,9 +45,9 @@ public partial class LanguageParameterTransformer : IOutboundParameterTransforme
         {
             //ensure this language is available
             var code = routeValue?.ToString();
-            var storeContext = EngineContext.Current.Resolve<IStoreContext>();
-            var store = storeContext.GetCurrentStore();
-            var languages = _languageService.GetAllLanguages(storeId: store.Id);
+            var synchronousCodeHelper = EngineContext.Current.Resolve<ISynchronousCodeHelper>();
+            var store = synchronousCodeHelper.GetCurrentStore();
+            var languages = synchronousCodeHelper.GetAllLanguages(storeId: store.Id);
             var language = languages
                 .FirstOrDefault(lang => lang.Published && lang.UniqueSeoCode.Equals(code, StringComparison.InvariantCultureIgnoreCase));
             if (language is not null)

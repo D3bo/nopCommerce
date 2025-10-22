@@ -1,7 +1,7 @@
 ﻿using FluentMigrator;
 using Nop.Core.Infrastructure;
 using Nop.Data.Migrations;
-using Nop.Services.Configuration;
+using Nop.Services.Helpers;
 
 namespace Nop.Plugin.Shipping.FixedByWeightByTotal.Migrations;
 
@@ -11,14 +11,14 @@ public class AddLoadAllRecordSetting : Migration
     public override void Up()
     {
         //do not use DI, because it produces exception on the installation process
-        var settingService = EngineContext.Current.Resolve<ISettingService>();
+        var synchronousCodeHelper = EngineContext.Current.Resolve<ISynchronousCodeHelper>();
 
-        var pluginSettings = settingService.LoadSetting<FixedByWeightByTotalSettings>();
+        var pluginSettings = synchronousCodeHelper.LoadSetting<FixedByWeightByTotalSettings>();
 
-        if (!settingService.SettingExists(pluginSettings, settings => settings.LoadAllRecord))
+        if (!synchronousCodeHelper.SettingExists(pluginSettings, settings => settings.LoadAllRecord))
         {
             pluginSettings.LoadAllRecord = true;
-            settingService.SaveSetting(pluginSettings, settings => settings.LoadAllRecord);
+            synchronousCodeHelper.SaveSetting(pluginSettings, settings => settings.LoadAllRecord);
         }
     }
 

@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using Microsoft.Net.Http.Headers;
 using Nop.Core.Infrastructure;
-using Nop.Services.Logging;
+using Nop.Services.Helpers;
 using static System.TimeSpan;
 
 namespace Nop.Plugin.Shipping.UPS.Services;
@@ -30,8 +30,8 @@ public static class HttpClientExtensions
         if (!upsSettings.Tracing)
             return;
 
-        var logger = EngineContext.Current.Resolve<ILogger>();
-        logger.Information($"UPS rates. Request: {request}{Environment.NewLine}Content: {request.Content?.ReadAsStringAsync().Result}");
+        var synchronousCodeHelper = EngineContext.Current.Resolve<ISynchronousCodeHelper>();
+        synchronousCodeHelper.Information($"UPS rates. Request: {request}{Environment.NewLine}Content: {request.Content?.ReadAsStringAsync().Result}");
     }
 
     public static void ProcessResponse(this HttpClient httpClient, HttpResponseMessage response, UPSSettings upsSettings)
@@ -44,7 +44,7 @@ public static class HttpClientExtensions
         if (!upsSettings.Tracing)
             return;
 
-        var logger = EngineContext.Current.Resolve<ILogger>();
-        logger.Information($"UPS rates. Response: {response}{Environment.NewLine}Content: {response.Content.ReadAsStringAsync().Result}");
+        var synchronousCodeHelper = EngineContext.Current.Resolve<ISynchronousCodeHelper>();
+        synchronousCodeHelper.Information($"UPS rates. Response: {response}{Environment.NewLine}Content: {response.Content.ReadAsStringAsync().Result}");
     }
 }

@@ -3,7 +3,7 @@ using Nop.Core.Domain.Messages;
 using Nop.Core.Infrastructure;
 using Nop.Data;
 using Nop.Data.Migrations;
-using Nop.Services.Localization;
+using Nop.Services.Helpers;
 using Nop.Web.Framework.Extensions;
 
 namespace Nop.Web.Framework.Migrations.UpgradeTo490;
@@ -18,13 +18,13 @@ public class LocalizationMigration : MigrationBase
             return;
 
         //do not use DI, because it produces exception on the installation process
-        var localizationService = EngineContext.Current.Resolve<ILocalizationService>();
+        var synchronousCodeHelper = EngineContext.Current.Resolve<ISynchronousCodeHelper>();
 
         var (languageId, languages) = this.GetLanguageData();
 
         #region Delete locales
 
-        localizationService.DeleteLocaleResources(new List<string>
+        synchronousCodeHelper.DeleteLocaleResources(new List<string>
         {
             //#7569
             "Admin.Configuration.AppSettings.Common.PluginStaticFileExtensionsBlacklist",
@@ -121,9 +121,9 @@ public class LocalizationMigration : MigrationBase
             ["Admin.Promotions.NewsLetterSubscriptions.Fields.Email.Required"] = "Admin.Promotions.NewsLetterSubscription.Fields.Email.Required",
             ["Admin.Promotions.NewsLetterSubscriptions.Fields.Language"] = "Admin.Promotions.NewsLetterSubscription.Fields.Language",
             ["Admin.Promotions.NewsLetterSubscriptions.Fields.Store"] = "Admin.Promotions.NewsLetterSubscription.Fields.Store",
-        }, languages, localizationService);
+        }, languages, synchronousCodeHelper);
 
-        localizationService.DeleteLocaleResources(new[]
+        synchronousCodeHelper.DeleteLocaleResources(new[]
         {
             "Admin.Configuration.AppSettings.AzureBlob",
             "Admin.Configuration.AppSettings.AzureBlob.ConnectionString",
@@ -148,7 +148,7 @@ public class LocalizationMigration : MigrationBase
 
         #region Add or update locales
 
-        localizationService.AddOrUpdateLocaleResource(new Dictionary<string, string>
+        synchronousCodeHelper.AddOrUpdateLocaleResource(new Dictionary<string, string>
         {
             //#4834
             ["Admin.Configuration.Settings.GeneralCommon.AdminArea.UseStickyHeaderLayout"] = "Use sticky header",

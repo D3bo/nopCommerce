@@ -392,6 +392,7 @@ public partial class BaseNopTest
         services.AddScoped<IHtmlFormatter, HtmlFormatter>();
 
         services.AddScoped<INopAssetHelper, NopAssetHelper>();
+        services.AddScoped<ISynchronousCodeHelper, SynchronousCodeHelper>();
 
         //slug route transformer
         services.AddSingleton<IReviewTypeService, ReviewTypeService>();

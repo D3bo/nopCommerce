@@ -2,7 +2,7 @@
 using Nop.Core.Infrastructure;
 using Nop.Data;
 using Nop.Data.Migrations;
-using Nop.Services.Localization;
+using Nop.Services.Helpers;
 using Nop.Web.Framework.Extensions;
 
 namespace Nop.Plugin.Tax.FixedOrByCountryStateZip.Migrations.UpgradeTo470;
@@ -19,12 +19,13 @@ public class LocalizationMigration : MigrationBase
     {
         if (!DataSettingsManager.IsDatabaseInstalled())
             return;
-        var localizationService = EngineContext.Current.Resolve<ILocalizationService>();
+
+        var synchronousCodeHelper = EngineContext.Current.Resolve<ISynchronousCodeHelper>();
 
         var (languageId, _) = this.GetLanguageData();
 
         //use localizationService to add, update and delete localization resources
-        localizationService.AddOrUpdateLocaleResource(new Dictionary<string, string>
+        synchronousCodeHelper.AddOrUpdateLocaleResource(new Dictionary<string, string>
         {
             ["Plugins.Tax.FixedOrByCountryStateZip.SwitchRate"] = @"
                     <p>

@@ -2,7 +2,7 @@
 using Nop.Core.Infrastructure;
 using Nop.Data;
 using Nop.Data.Migrations;
-using Nop.Services.Localization;
+using Nop.Services.Helpers;
 using Nop.Web.Framework.Extensions;
 
 namespace Nop.Plugin.Widgets.GoogleAnalytics.Migrations.UpgradeTo470;
@@ -19,12 +19,12 @@ public class LocalizationMigration : MigrationBase
     {
         if (!DataSettingsManager.IsDatabaseInstalled())
             return;
-        var localizationService = EngineContext.Current.Resolve<ILocalizationService>();
+        var synchronousCodeHelper = EngineContext.Current.Resolve<ISynchronousCodeHelper>();
 
         var (languageId, _) = this.GetLanguageData();
 
         //use localizationService to add, update and delete localization resources
-        localizationService.AddOrUpdateLocaleResource(new Dictionary<string, string>
+        synchronousCodeHelper.AddOrUpdateLocaleResource(new Dictionary<string, string>
         {
             ["Plugins.Widgets.GoogleAnalytics.UseSandbox"] = "UseSandbox",
             ["Plugins.Widgets.GoogleAnalytics.UseSandbox.Hint"] = "Determine whether to use the sandbox environment for testing purposes. This setting only applies to sending eCommerce information via the Measurement Protocol.",

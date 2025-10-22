@@ -2,7 +2,7 @@
 using Nop.Core.Infrastructure;
 using Nop.Data;
 using Nop.Data.Migrations;
-using Nop.Services.Localization;
+using Nop.Services.Helpers;
 using Nop.Web.Framework.Extensions;
 
 namespace Nop.Web.Framework.Migrations.UpgradeTo480;
@@ -17,13 +17,13 @@ public class LocalizationMigration : MigrationBase
             return;
 
         //do not use DI, because it produces exception on the installation process
-        var localizationService = EngineContext.Current.Resolve<ILocalizationService>();
+        var synchronousCodeHelper = EngineContext.Current.Resolve<ISynchronousCodeHelper>();
 
         var (languageId, _) = this.GetLanguageData();
 
         #region Delete locales
 
-        localizationService.DeleteLocaleResources(new List<string>
+        synchronousCodeHelper.DeleteLocaleResources(new List<string>
         {
             //#6977
             "Common.FileUploader.Upload",
@@ -119,7 +119,7 @@ public class LocalizationMigration : MigrationBase
 
         #region Add or update locales
 
-        localizationService.AddOrUpdateLocaleResource(new Dictionary<string, string>
+        synchronousCodeHelper.AddOrUpdateLocaleResource(new Dictionary<string, string>
         {
             //#6977
             ["Common.FileUploader.Browse"] = "Browse",

@@ -1,7 +1,7 @@
 ﻿using FluentMigrator;
 using Nop.Data;
 using Nop.Data.Migrations;
-using Nop.Services.Localization;
+using Nop.Services.Helpers;
 using Nop.Web.Framework.Extensions;
 
 namespace Nop.Plugin.ExternalAuth.Facebook.Migrations;
@@ -11,18 +11,15 @@ public class DataDeletionMigration : MigrationBase
 {
     #region Fields
 
-    protected readonly ILanguageService _languageService;
-    protected readonly ILocalizationService _localizationService;
+    protected readonly ISynchronousCodeHelper _synchronousCodeHelper;
 
     #endregion
 
     #region Ctor
 
-    public DataDeletionMigration(ILanguageService languageService,
-        ILocalizationService localizationService)
+    public DataDeletionMigration(ISynchronousCodeHelper synchronousCodeHelper)
     {
-        _languageService = languageService;
-        _localizationService = localizationService;
+        _synchronousCodeHelper = synchronousCodeHelper;
     }
 
     #endregion
@@ -37,9 +34,9 @@ public class DataDeletionMigration : MigrationBase
         if (!DataSettingsManager.IsDatabaseInstalled())
             return;
 
-        var (languageId, _) = this.GetLanguageData(_languageService);
+        var (languageId, _) = this.GetLanguageData(_synchronousCodeHelper);
 
-        _localizationService.AddOrUpdateLocaleResource(new Dictionary<string, string>
+        _synchronousCodeHelper.AddOrUpdateLocaleResource(new Dictionary<string, string>
         {
             ["Plugins.ExternalAuth.Facebook.AuthenticationDataDeletedSuccessfully"] = "Data deletion request completed",
             ["Plugins.ExternalAuth.Facebook.AuthenticationDataExist"] = "Data deletion request is pending, please contact the admin",

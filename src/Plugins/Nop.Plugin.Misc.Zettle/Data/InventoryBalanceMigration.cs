@@ -2,7 +2,7 @@
 using Nop.Data;
 using Nop.Data.Migrations;
 using Nop.Plugin.Misc.Zettle.Domain;
-using Nop.Services.Configuration;
+using Nop.Services.Helpers;
 
 namespace Nop.Plugin.Misc.Zettle.Data;
 
@@ -11,15 +11,15 @@ public class InventoryBalanceMigration : MigrationBase
 {
     #region Fields
 
-    protected readonly ISettingService _settingService;
+    protected readonly ISynchronousCodeHelper _synchronousCodeHelper;
 
     #endregion
 
     #region Ctor
 
-    public InventoryBalanceMigration(ISettingService settingService)
+    public InventoryBalanceMigration(ISynchronousCodeHelper synchronousCodeHelper)
     {
-        _settingService = settingService;
+        _synchronousCodeHelper = synchronousCodeHelper;
     }
 
     #endregion
@@ -39,11 +39,11 @@ public class InventoryBalanceMigration : MigrationBase
             Alter.Table(nameof(ZettleRecord)).AddColumn(nameof(ZettleRecord.ExternalUuid)).AsString().Nullable();
 
         //delete settings
-        var setting = _settingService.GetSetting($"{nameof(ZettleSettings)}.InventoryTrackingIds");
+        var setting = _synchronousCodeHelper.GetSetting($"{nameof(ZettleSettings)}.InventoryTrackingIds");
         if (setting is null)
             return;
 
-        _settingService.DeleteSetting(setting);
+        _synchronousCodeHelper.DeleteSetting(setting);
     }
 
     /// <summary>

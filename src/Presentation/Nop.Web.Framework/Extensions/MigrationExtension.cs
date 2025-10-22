@@ -3,7 +3,7 @@ using FluentMigrator;
 using Nop.Core.Domain.Localization;
 using Nop.Core.Infrastructure;
 using Nop.Services.Common;
-using Nop.Services.Localization;
+using Nop.Services.Helpers;
 
 namespace Nop.Web.Framework.Extensions;
 
@@ -13,11 +13,11 @@ public static partial class MigrationExtension
     /// Get language data
     /// </summary>
     /// <returns>Default language identifier and all languages</returns>
-    public static (int? defaultLanguageId, IList<Language> allLanguages) GetLanguageData(this IMigration _, ILanguageService languageService = null)
+    public static (int? defaultLanguageId, IList<Language> allLanguages) GetLanguageData(this IMigration _, ISynchronousCodeHelper synchronousCodeHelper = null)
     {
-        languageService ??= EngineContext.Current.Resolve<ILanguageService>();
+        synchronousCodeHelper ??= EngineContext.Current.Resolve<ISynchronousCodeHelper>();
 
-        var languages = languageService.GetAllLanguages(true);
+        var languages = synchronousCodeHelper.GetAllLanguages(true);
         var languageId = languages
             .FirstOrDefault(lang => lang.UniqueSeoCode == new CultureInfo(NopCommonDefaults.DefaultLanguageCulture).TwoLetterISOLanguageName)?.Id;
 
@@ -30,25 +30,25 @@ public static partial class MigrationExtension
     /// <param name="_">Migration</param>
     /// <param name="localesToRename">Locales to rename. Key - old name, Value - new name</param>
     /// <param name="allLanguages">All languages</param>
-    /// <param name="localizationService">Localization service</param>
-    public static void RenameLocales(this IMigration _, Dictionary<string, string> localesToRename, IList<Language> allLanguages, ILocalizationService localizationService)
+    /// <param name="synchronousCodeHelper">Synchronous code helper</param>
+    public static void RenameLocales(this IMigration _, Dictionary<string, string> localesToRename, IList<Language> allLanguages, ISynchronousCodeHelper synchronousCodeHelper)
     {
         foreach (var lang in allLanguages)
         foreach (var locale in localesToRename)
         {
-            var lsr = localizationService.GetLocaleStringResourceByName(locale.Key, lang.Id, false);
+            var lsr = synchronousCodeHelper.GetLocaleStringResourceByName(locale.Key, lang.Id, false);
             
             if (lsr == null) 
                 continue;
 
-            var exist = localizationService.GetLocaleStringResourceByName(locale.Value, lang.Id, false);
+            var exist = synchronousCodeHelper.GetLocaleStringResourceByName(locale.Value, lang.Id, false);
 
             if (exist != null)
-                localizationService.DeleteLocaleStringResource(lsr);
+                synchronousCodeHelper.DeleteLocaleStringResource(lsr);
             else
             {
                 lsr.ResourceName = locale.Value.ToLowerInvariant();
-                localizationService.UpdateLocaleStringResource(lsr);
+                synchronousCodeHelper.UpdateLocaleStringResource(lsr);
             }
         }
     }
